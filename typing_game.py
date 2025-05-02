@@ -1,28 +1,50 @@
 from time import time, sleep
-from os import system, get_terminal_size
-from colorama import Fore, Style, init,Back
+from os import system, get_terminal_size, name as os_name
+from colorama import Fore, Style, init, Back
 from lorem import sentence
-import os
-import msvcrt
+import sys
 
 init(autoreset=True)
 
 text = f"{sentence()} {sentence()} {sentence()} {sentence()}"
 
+# Platform-specific imports
+if os_name == "nt":
+    import msvcrt
+else:
+    import tty
+    import termios
+
+
+def get_char():
+    if os_name == "nt":
+        return msvcrt.getwch()
+    else:
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+            return ch
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
 def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    system("cls" if os_name == "nt" else "clear")
+
 
 def StartMenu():
     clear_screen()
-    name = '''
+    name = """
        ████████╗██╗   ██╗██████╗ ███████╗      ████████╗███████╗ ██████╗████████╗
       ╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝      ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
        ██║    ╚████╔╝ ██████╔╝█████╗  █████╗   ██║   █████╗  ╚█████╗    ██║
        ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ╚════╝   ██║   ██╔══╝   ╚═══██╗   ██║
        ██║      ██║   ██║     ███████╗         ██║   ███████╗██████╔╝   ██║
        ╚═╝      ╚═╝   ╚═╝     ╚══════╝         ╚═╝   ╚══════╝╚═════╝    ╚═╝
-    '''
-    or_name = """TG : RedSnows"""
+    """
+    or_name = "TG : RedSnows"
 
     cols = get_terminal_size().columns
 
@@ -35,13 +57,15 @@ def StartMenu():
     print(Fore.GREEN + " " * max(padding, 0) + or_name)
 
     print(Fore.LIGHTRED_EX + "Telegram:", Fore.LIGHTWHITE_EX + "https://t.me/RedSnows")
-    print(Fore.LIGHTRED_EX + "GitHub:", Fore.LIGHTWHITE_EX + "https://github.com/mmd-dll")
+    print(
+        Fore.LIGHTRED_EX + "GitHub:", Fore.LIGHTWHITE_EX + "https://github.com/mmd-dll"
+    )
     print()
-    print(Fore.BLUE + '[1]' + Fore.WHITE, 'Start game')
-    print(Fore.BLUE + '[2]' + Fore.WHITE, 'Exit')
+    print(Fore.BLUE + "[1]" + Fore.WHITE, "Start game")
+    print(Fore.BLUE + "[2]" + Fore.WHITE, "Exit")
 
     while True:
-        user_Choice = input('\n\nEnter option number: ')
+        user_Choice = input("\n\nEnter option number: ")
         try:
             user_Choice = int(user_Choice)
         except:
@@ -52,6 +76,7 @@ def StartMenu():
             break
         elif user_Choice == 2:
             exit()
+
 
 def typing_game():
     StartMenu()
@@ -70,7 +95,7 @@ def typing_game():
     start_time = time()
 
     while index < len(text):
-        char = msvcrt.getwch()
+        char = get_char()
 
         if char == text[index]:
             if index in mistakes:
@@ -87,7 +112,9 @@ def typing_game():
 
         remaining_text = text[index:]
         if remaining_text:
-            next_char = Back.MAGENTA + Fore.BLACK + remaining_text[0] + Fore.RESET + Back.RESET
+            next_char = (
+                Back.MAGENTA + Fore.BLACK + remaining_text[0] + Fore.RESET + Back.RESET
+            )
             rest_chars = remaining_text[1:]
             colored_input = "".join(user_input) + next_char + rest_chars
         else:
@@ -112,6 +139,7 @@ def typing_game():
             exit()
         else:
             print("What?")
+
 
 
 
