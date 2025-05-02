@@ -64,7 +64,8 @@ def typing_game():
     clear_screen()
     print(Fore.WHITE + Style.BRIGHT + text + "\n")
 
-    user_input = ""
+    user_input = []
+    mistakes = set()  # index هایی که اشتباه زده شدن
     index = 0
     start_time = time()
 
@@ -72,11 +73,15 @@ def typing_game():
         char = msvcrt.getwch()
 
         if char == text[index]:
-            user_input += Fore.GREEN + char
+            if index in mistakes:
+                # قبلاً اشتباه بوده، پس رنگ رو قرمز نگه می‌داریم
+                user_input.append(Fore.RED + text[index])
+            else:
+                user_input.append(Fore.GREEN + text[index])
+            index += 1
         else:
-            user_input += Fore.RED + text[index]
-
-        index += 1
+            mistakes.add(index) 
+            continue
 
         clear_screen()
 
@@ -84,9 +89,9 @@ def typing_game():
         if remaining_text:
             next_char = Back.MAGENTA + Fore.BLACK + remaining_text[0] + Fore.RESET + Back.RESET
             rest_chars = remaining_text[1:]
-            colored_input = user_input + next_char + rest_chars
+            colored_input = "".join(user_input) + next_char + rest_chars
         else:
-            colored_input = user_input
+            colored_input = "".join(user_input)
 
         print(colored_input)
 
@@ -98,5 +103,16 @@ def typing_game():
     print()
     print(Fore.GREEN + f"🎉 Completed in {duration:.2f} seconds!")
     print(Fore.GREEN + f"🕒 Typing speed: {wpm:.2f} words per minute")
+    while True:    
+        result = input(Fore.LIGHTRED_EX + "[?]" + Fore.LIGHTWHITE_EX + "Wanna try again? (y,n) : ")
+        if result in ['y','Y']:
+            typing_game()
+            break
+        elif result in ['N','n']:
+            exit()
+        else:
+            print("What?")
+
+
 
 typing_game()
